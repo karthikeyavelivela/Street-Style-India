@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #DC143C;
+  --color-secondary: #5C4033;
+  --color-text: #000000;
+  --color-text-secondary: #666666;
+  --color-border: #E5E5E5;
+  --color-background: #FFFFFF;
+
+  --animate-fade-in: fadeIn 0.4s ease-in-out;
+  --animate-fade-out: fadeOut 0.4s ease-in-out;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+/* Base styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility overrides if necessary */

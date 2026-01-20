@@ -69,7 +69,7 @@ const Navbar = () => {
                             Street Style India
                         </h1>
                         <span className="text-[10px] font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity absolute top-full mt-1 text-secondary">
-                            by Karthik & Harsha
+                            by Sameer & Indhu
                         </span>
                     </Link>
                 </div>

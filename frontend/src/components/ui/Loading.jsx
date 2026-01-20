@@ -34,7 +34,7 @@ const Loading = ({ onComplete }) => {
         >
             <div className="text-center">
                 <h1 className="text-5xl font-black tracking-tighter text-black mb-2 font-sans">SSI</h1>
-                <p className="text-sm font-medium text-text-secondary tracking-[0.2em] uppercase">by Karthik & Harsha</p>
+                <p className="text-sm font-medium text-text-secondary tracking-[0.2em] uppercase">by Sameer & Indhu</p>
             </div>
         </div>
     );

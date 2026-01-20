@@ -6,6 +6,7 @@ import WhyChooseSSI from '../components/home/WhyChooseSSI';
 import NewArrivals from '../components/home/NewArrivals';
 import CustomerReviews from '../components/home/CustomerReviews';
 import Newsletter from '../components/home/Newsletter';
+import ScrollingText from '../components/home/ScrollingText';
 
 const Home = () => {
     return (
@@ -17,6 +18,7 @@ const Home = () => {
             <NewArrivals />
             <CustomerReviews />
             <Newsletter />
+            <ScrollingText />
         </>
     );
 };

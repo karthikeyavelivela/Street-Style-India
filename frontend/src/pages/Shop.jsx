@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Filter, ChevronDown, Grid, List } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
@@ -11,10 +12,16 @@ const Shop = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const { user } = useAuth();
+    const [cookiesAccepted, setCookiesAccepted] = useState(localStorage.getItem('cookieConsent') === 'true');
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const { data } = await api.get('/products');
+                const url = searchQuery ? `/products?keyword=${searchQuery}` : '/products';
+                const { data } = await api.get(url);
                 setProducts(data);
                 setLoading(false);
             } catch (error) {
@@ -22,8 +29,48 @@ const Shop = () => {
                 setLoading(false);
             }
         };
-        fetchProducts();
-    }, []);
+        if (user && cookiesAccepted) {
+            const timer = setTimeout(() => {
+                fetchProducts();
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [user, cookiesAccepted, searchQuery]);
+
+    const handleAcceptCookies = () => {
+        localStorage.setItem('cookieConsent', 'true');
+        setCookiesAccepted(true);
+    };
+
+    if (!user || !cookiesAccepted) {
+        return (
+            <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-white text-center p-4">
+                <div className="max-w-md w-full bg-white text-black p-8 rounded-2xl shadow-2xl">
+                    <h2 className="text-3xl font-black mb-4">ACCESS RESTRICTED</h2>
+                    {!user && (
+                        <div className="mb-6">
+                            <p className="mb-4 text-gray-600">Please login to access the exclusive shop.</p>
+                            <Link to="/login" className="block w-full bg-black text-white font-bold py-3 rounded hover:bg-gray-800 transition-colors">
+                                LOGIN NOW
+                            </Link>
+                            <p className="mt-2 text-sm text-gray-500">
+                                Don't have an account? <Link to="/register" className="underline font-bold">Register</Link>
+                            </p>
+                        </div>
+                    )}
+
+                    {user && !cookiesAccepted && (
+                        <div>
+                            <p className="mb-4 text-gray-600">We use cookies to ensure you get the best experience on our website.</p>
+                            <button onClick={handleAcceptCookies} className="w-full bg-black text-white font-bold py-3 rounded hover:bg-gray-800 transition-colors">
+                                ACCEPT COOKIES
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 md:px-8 py-8">
@@ -34,7 +81,7 @@ const Shop = () => {
 
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Filters Sidebar (Desktop) */}
-                <div className="hidden md:block w-64 flex-shrink-0">
+                <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-4">
                     <Filters />
                 </div>
 
@@ -42,14 +89,21 @@ const Shop = () => {
                 <div className="flex-1">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex items-center gap-4 w-full md:w-auto flex-1">
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full md:max-w-xs border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
+                            />
                             <button
                                 className="md:hidden flex items-center gap-2 border border-gray-300 rounded px-4 py-2 font-bold"
                                 onClick={() => setMobileFiltersOpen(true)}
                             >
                                 <Filter size={18} /> Filters
                             </button>
-                            <p className="text-gray-500">Showing <span className="font-bold text-black">{products.length}</span> results</p>
+                            <p className="text-gray-500 whitespace-nowrap">Showing <span className="font-bold text-black">{products.length}</span> results</p>
                         </div>
 
                         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
@@ -85,7 +139,7 @@ const Shop = () => {
                         <button className="w-10 h-10 flex items-center justify-center border border-gray-300 hover:border-black rounded transition-colors">2</button>
                         <button className="w-10 h-10 flex items-center justify-center border border-gray-300 hover:border-black rounded transition-colors">3</button>
                         <span className="w-10 h-10 flex items-center justify-center">...</span>
-                        <button className="w-10 h-10 flex items-center justify-center border border-gray-300 hover:border-black rounded transition-colors">></button>
+                        <button className="w-10 h-10 flex items-center justify-center border border-gray-300 hover:border-black rounded transition-colors">&gt;</button>
                     </div>
                 </div>
             </div>

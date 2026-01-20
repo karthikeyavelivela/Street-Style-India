@@ -1,17 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import api from '../../utils/api';
+import { Pencil, Trash2, Plus, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isAdding, setIsAdding] = useState(false);
-
-    // Form State
-    const [formData, setFormData] = useState({
-        name: '', category: '', price: '', discount: 0, stock: 0, description: '', image: ''
-    });
 
     const fetchProducts = async () => {
         try {
@@ -28,164 +22,87 @@ const Products = () => {
         fetchProducts();
     }, []);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            // Basic transformation to match backend schema. 
-            // In a real app, handle variants and file uploads properly.
-            const payload = {
-                name: formData.name,
-                category: formData.category,
-                price: Number(formData.price),
-                discount: Number(formData.discount),
-                description: formData.description,
-                images: [formData.image || "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80&w=800"], // Fallback image
-                variants: [
-                    {
-                        color: "Black", // Default variant
-                        sizes: [
-                            { size: "M", stock: Number(formData.stock) }
-                        ]
-                    }
-                ]
-            };
-
-            await api.post('/products', payload);
-            toast.success("Product Added Successfully!");
-            setIsAdding(false);
-            fetchProducts(); // Refresh list
-            // Reset form
-            setFormData({ name: '', category: '', price: '', discount: 0, stock: 0, description: '', image: '' });
-
-        } catch (error) {
-            toast.error("Failed to add product");
-            console.error(error);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this product?")) {
+    const deleteHandler = async (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
             try {
                 await api.delete(`/products/${id}`);
-                toast.success("Product Deleted");
+                toast.success('Product deleted successfully');
                 fetchProducts();
             } catch (error) {
-                toast.error("Delete failed");
+                toast.error(error.response?.data?.message || 'Error deleting product');
             }
         }
-    }
+    };
 
-    if (loading && !isAdding) return <div>Loading...</div>;
+    const groupedProducts = products.reduce((acc, product) => {
+        const cat = product.category || 'Uncategorized';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(product);
+        return acc;
+    }, {});
+
+    if (loading) return <div>Loading Products...</div>;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            {!isAdding ? (
-                <div className="p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <h2 className="text-xl font-black">All Products ({products.length})</h2>
-                        <div className="flex w-full md:w-auto gap-4">
-                            <button
-                                onClick={() => setIsAdding(true)}
-                                className="bg-black text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-800"
-                            >
-                                <Plus size={18} /> Add Product
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th className="py-4 px-4 font-bold text-gray-500">Product Name</th>
-                                    <th className="py-4 px-4 font-bold text-gray-500">Category</th>
-                                    <th className="py-4 px-4 font-bold text-gray-500">Price</th>
-                                    <th className="py-4 px-4 font-bold text-gray-500">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {products.map((product) => (
-                                    <tr key={product._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 px-4 font-medium flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gray-100 rounded-md overflow-hidden">
-                                                <img src={product.images?.[0]} alt="" className="w-full h-full object-cover" />
-                                            </div>
-                                            {product.name}
-                                        </td>
-                                        <td className="py-4 px-4">{product.category}</td>
-                                        <td className="py-4 px-4 font-bold">₹{product.price}</td>
-                                        <td className="py-4 px-4">
-                                            <button onClick={() => handleDelete(product._id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+        <div className="space-y-12">
+            <div className="flex justify-between items-center bg-gray-900 text-white p-6 rounded-xl">
+                <div>
+                    <h2 className="text-2xl font-black">PRODUCT MANAGEMENT</h2>
+                    <p className="text-gray-400">Manage your store inventory across all categories.</p>
                 </div>
-            ) : (
-                <div className="p-8">
-                    <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-xl font-black">Add New Product</h2>
-                        <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                            <X size={24} />
-                        </button>
-                    </div>
+                <button className="bg-white text-black px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-100 transition-colors">
+                    <Plus size={20} /> Add Product
+                </button>
+            </div>
 
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold mb-2">Product Name</label>
-                                <input name="name" value={formData.name} onChange={handleChange} required type="text" className="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="e.g. Urban Hoodie" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Price (₹)</label>
-                                    <input name="price" value={formData.price} onChange={handleChange} required type="number" className="w-full border border-gray-300 rounded-lg px-4 py-3" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Discount (%)</label>
-                                    <input name="discount" value={formData.discount} onChange={handleChange} type="number" className="w-full border border-gray-300 rounded-lg px-4 py-3" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-2">Category</label>
-                                <select name="category" value={formData.category} onChange={handleChange} required className="w-full border border-gray-300 rounded-lg px-4 py-3">
-                                    <option value="">Select Category</option>
-                                    <option value="T-Shirts">T-Shirts</option>
-                                    <option value="Hoodies">Hoodies</option>
-                                    <option value="Oversized">Oversized</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-2">Image URL</label>
-                                <input name="image" value={formData.image} onChange={handleChange} type="text" className="w-full border border-gray-300 rounded-lg px-4 py-3" placeholder="https://..." />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-2">Stock</label>
-                                <input name="stock" value={formData.stock} onChange={handleChange} type="number" className="w-full border border-gray-300 rounded-lg px-4 py-3" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold mb-2">Description</label>
-                                <textarea name="description" value={formData.description} onChange={handleChange} className="w-full border border-gray-300 rounded-lg px-4 py-3 h-32"></textarea>
-                            </div>
-
-                            <button type="submit" className="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800">
-                                Save Product
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            {Object.keys(groupedProducts).length === 0 && (
+                <div className="p-8 text-center text-gray-500">No products found.</div>
             )}
+
+            {Object.entries(groupedProducts).map(([category, items]) => (
+                <div key={category} className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-2xl font-black uppercase tracking-tight">{category}</h3>
+                        <span className="bg-black text-white text-xs font-bold px-2 py-1 rounded-full">{items.length} Items</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {items.map((product) => (
+                            <div key={product._id} className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+                                <div className="h-48 overflow-hidden relative">
+                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    {!product.isActive && (
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                            <span className="bg-red-500 text-white px-3 py-1 font-bold rounded-full text-xs flex items-center gap-1">
+                                                <AlertCircle size={12} /> INACTIVE
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-bold text-lg leading-tight">{product.name}</h4>
+                                        <span className="font-bold">₹{product.price}</span>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+
+                                    <div className="flex gap-2 pt-4 border-t border-gray-50">
+                                        <button className="flex-1 flex items-center justify-center gap-2 bg-gray-50 hover:bg-black hover:text-white py-2 rounded font-bold text-sm transition-colors">
+                                            <Pencil size={16} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => deleteHandler(product._id)}
+                                            className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };

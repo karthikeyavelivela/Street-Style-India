@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
             toast.success("Registration Successful!");
             return true;
         } catch (error) {
+            console.error("Registration Error:", error);
             toast.error(error.response?.data?.message || "Registration failed");
             return false;
         }

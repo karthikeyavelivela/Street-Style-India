@@ -26,14 +26,19 @@ const reviews = [
 ];
 
 const CustomerReviews = () => {
-    return (
-        <section className="py-20 bg-gray-50 text-center">
-            <div className="container mx-auto px-4 md:px-8">
-                <h2 className="text-3xl font-black mb-12 tracking-tight">WHAT THEY SAY</h2>
+    // Duplicate reviews to create seamless loop
+    const extendedReviews = [...reviews, ...reviews, ...reviews];
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {reviews.map((review) => (
-                        <div key={review.id} className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+    return (
+        <section className="py-20 bg-gray-50 text-center overflow-hidden">
+            <div className="container mx-auto px-4 md:px-8 mb-12">
+                <h2 className="text-3xl font-black tracking-tight">WHAT THEY SAY</h2>
+            </div>
+
+            <div className="relative w-full">
+                <div className="flex animate-scroll-cards gap-8 px-4 w-max hover:paused">
+                    {extendedReviews.map((review, index) => (
+                        <div key={`${review.id}-${index}`} className="w-[300px] md:w-[400px] bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex-shrink-0">
                             <div className="flex justify-center mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
@@ -56,6 +61,19 @@ const CustomerReviews = () => {
                     ))}
                 </div>
             </div>
+
+            <style jsx>{`
+                @keyframes scroll-cards {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-scroll-cards {
+                    animation: scroll-cards 40s linear infinite;
+                }
+                .hover\\:paused:hover {
+                    animation-play-state: paused;
+                }
+            `}</style>
         </section>
     );
 };

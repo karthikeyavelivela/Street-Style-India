@@ -5,7 +5,14 @@ import Product from "../models/Product.js";
 // @access  Public
 export const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({ isActive: true });
+        const keyword = req.query.keyword ? {
+            name: {
+                $regex: req.query.keyword,
+                $options: 'i'
+            }
+        } : {};
+
+        const products = await Product.find({ ...keyword, isActive: true });
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: error.message });

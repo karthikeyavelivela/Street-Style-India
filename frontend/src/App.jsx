@@ -11,6 +11,13 @@ import Profile from './pages/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Admin from './pages/admin/Admin';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import Returns from './pages/Returns';
+import FAQ from './pages/FAQ';
+import Shipping from './pages/Shipping';
+import OrderDetails from './pages/OrderDetails';
 
 const UserLayoutWrapper = ({ children }) => {
   return <Layout>{children}</Layout>;
@@ -36,7 +43,16 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Profile />} /> {/* Mapping Orders to Profile for visual flow */}
+          <Route path="/orders" element={<Profile />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
+
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/returns" element={<Returns />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/shipping" element={<Shipping />} />
+
           <Route path="*" element={<div className="container mx-auto px-4 py-20 text-center text-4xl font-black">404 - Page Not Found</div>} />
         </Routes>
       </UserLayoutWrapper>

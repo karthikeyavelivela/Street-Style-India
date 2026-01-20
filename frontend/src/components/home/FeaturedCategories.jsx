@@ -19,6 +19,12 @@ const categories = [
         title: "Oversized",
         image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800",
         link: "/shop?category=oversized"
+    },
+    {
+        id: 4,
+        title: "Sweatshirts",
+        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800", // Placeholder
+        link: "/shop?category=sweatshirts"
     }
 ];
 
@@ -28,7 +34,7 @@ const FeaturedCategories = () => {
             <div className="container mx-auto px-4 md:px-8">
                 <h2 className="text-3xl font-black text-center mb-12 tracking-tight">FEATURED CATEGORIES</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}

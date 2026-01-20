@@ -65,7 +65,7 @@ const Navbar = () => {
                 {/* Center: Brand Name */}
                 <div className="flex justify-center">
                     <Link to="/" className="group flex flex-col items-center relative z-50">
-                        <h1 className="text-2xl md:text-3xl font-black tracking-[0.2em] transition-colors text-black uppercase whitespace-nowrap" style={{ fontFamily: "'Oswald', sans-serif" }}>
+                        <h1 className="text-xl md:text-3xl font-black tracking-[0.2em] transition-colors text-black uppercase whitespace-nowrap" style={{ fontFamily: "'Oswald', sans-serif" }}>
                             Street Style India
                         </h1>
                         <span className="text-[10px] font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity absolute top-full mt-1 text-secondary">

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a configured axios instance
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'https://street-style-india-1.onrender.com/api',
 });
 
 // Add a request interceptor to include the auth token

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'; // added useNavigate
 import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, MessageSquare } from 'lucide-react'; // added Menu, X
 import { useAuth } from '../../context/AuthContext'; // added useAuth
@@ -11,13 +11,34 @@ import Reviews from './Reviews';
 const Admin = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { logout, user } = useAuth();
+    const { logout, user, loading } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        if (!loading && (!user || user.role !== 'admin')) {
+            navigate('/login');
+        }
+    }, [user, loading, navigate]);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user || user.role !== 'admin') {
+        return null; // Will redirect via useEffect
+    }
 
     const navItems = [
         { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },

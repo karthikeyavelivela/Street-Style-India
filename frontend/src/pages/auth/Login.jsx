@@ -15,7 +15,15 @@ const Login = () => {
     }, [user, navigate]);
 
     const onSubmit = async (data) => {
-        await login(data.email, data.password);
+        const success = await login(data.email, data.password);
+        if (success) {
+            // Get the updated user info from localStorage
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                const userData = JSON.parse(userInfo);
+                navigate(userData.role === 'admin' ? '/admin/dashboard' : '/');
+            }
+        }
     };
 
     return (

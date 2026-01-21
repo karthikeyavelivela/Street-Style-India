@@ -4,7 +4,8 @@ import {
     getProductById,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductMeta
 } from "../controllers/productController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -13,6 +14,8 @@ const router = express.Router();
 router.route("/")
     .get(getProducts)
     .post(protect, admin, createProduct);
+
+router.get("/meta", getProductMeta);
 
 router.route("/:id")
     .get(getProductById)

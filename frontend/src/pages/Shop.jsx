@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, ChevronDown, Grid, List } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
@@ -11,66 +10,60 @@ const Shop = () => {
     const [viewMode, setViewMode] = useState('grid');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [meta, setMeta] = useState({ categories: [], colors: [], sizes: [], minPrice: 0, maxPrice: 5000 });
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState({
+        categories: [],
+        colors: [],
+        sizes: [],
+        price: 5000
+    });
 
-    const { user } = useAuth();
-    const [cookiesAccepted, setCookiesAccepted] = useState(localStorage.getItem('cookieConsent') === 'true');
+    useEffect(() => {
+        const fetchMeta = async () => {
+            try {
+                const { data } = await api.get('/products/meta');
+                setMeta(data);
+                setFilters((prev) => ({ ...prev, price: data.maxPrice || prev.price }));
+            } catch (error) {
+                console.error("Error fetching filter meta:", error);
+            }
+        };
+        fetchMeta();
+    }, []);
+
+    const queryParams = useMemo(() => {
+        const params = {
+            keyword: searchQuery || undefined,
+            category: filters.categories.join(',') || undefined,
+            colors: filters.colors.join(',') || undefined,
+            sizes: filters.sizes.join(',') || undefined,
+            minPrice: meta.minPrice || undefined,
+            maxPrice: filters.price || undefined,
+        };
+        return params;
+    }, [filters, searchQuery, meta.minPrice]);
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const url = searchQuery ? `/products?keyword=${searchQuery}` : '/products';
-                const { data } = await api.get(url);
+                setLoading(true);
+                const { data } = await api.get('/products', { params: queryParams });
                 setProducts(data);
-                setLoading(false);
             } catch (error) {
                 console.error("Error fetching products:", error);
+            } finally {
                 setLoading(false);
             }
         };
-        if (user && cookiesAccepted) {
-            const timer = setTimeout(() => {
-                fetchProducts();
-            }, 500);
-            return () => clearTimeout(timer);
-        }
-    }, [user, cookiesAccepted, searchQuery]);
+        const timer = setTimeout(fetchProducts, 250);
+        return () => clearTimeout(timer);
+    }, [queryParams]);
 
-    const handleAcceptCookies = () => {
-        localStorage.setItem('cookieConsent', 'true');
-        setCookiesAccepted(true);
+    const handleFilterChange = (key, value) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
     };
-
-    if (!user || !cookiesAccepted) {
-        return (
-            <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-white text-center p-4">
-                <div className="max-w-md w-full bg-white text-black p-8 rounded-2xl shadow-2xl">
-                    <h2 className="text-3xl font-black mb-4">ACCESS RESTRICTED</h2>
-                    {!user && (
-                        <div className="mb-6">
-                            <p className="mb-4 text-gray-600">Please login to access the exclusive shop.</p>
-                            <Link to="/login" className="block w-full bg-black text-white font-bold py-3 rounded hover:bg-gray-800 transition-colors">
-                                LOGIN NOW
-                            </Link>
-                            <p className="mt-2 text-sm text-gray-500">
-                                Don't have an account? <Link to="/register" className="underline font-bold">Register</Link>
-                            </p>
-                        </div>
-                    )}
-
-                    {user && !cookiesAccepted && (
-                        <div>
-                            <p className="mb-4 text-gray-600">We use cookies to ensure you get the best experience on our website.</p>
-                            <button onClick={handleAcceptCookies} className="w-full bg-black text-white font-bold py-3 rounded hover:bg-gray-800 transition-colors">
-                                ACCEPT COOKIES
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="container mx-auto px-4 md:px-8 py-8">
@@ -82,7 +75,11 @@ const Shop = () => {
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Filters Sidebar (Desktop) */}
                 <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-4">
-                    <Filters />
+                    <Filters
+                        meta={meta}
+                        selected={filters}
+                        onChange={handleFilterChange}
+                    />
                 </div>
 
                 {/* Main Content */}
@@ -107,14 +104,14 @@ const Shop = () => {
                         </div>
 
                         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                            <div className="flex items-center gap-2 border-r border-gray-300 pr-4">
-                                <span className="text-gray-500 text-sm">Sort by:</span>
-                                <div className="relative group">
-                                    <button className="flex items-center gap-1 font-bold">
-                                        Newest <ChevronDown size={14} />
-                                    </button>
-                                </div>
+                        <div className="flex items-center gap-2 border-r border-gray-300 pr-4">
+                            <span className="text-gray-500 text-sm">Sort by:</span>
+                            <div className="relative group">
+                                <button className="flex items-center gap-1 font-bold">
+                                    Newest <ChevronDown size={14} />
+                                </button>
                             </div>
+                        </div>
                             <div className="flex items-center gap-2 text-gray-400">
                                 <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? "text-black" : "hover:text-black"}><Grid size={20} /></button>
                                 <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? "text-black" : "hover:text-black"}><List size={20} /></button>
@@ -125,6 +122,8 @@ const Shop = () => {
                     {/* Product Grid */}
                     {loading ? (
                         <div className="py-20 text-center">Loading Products...</div>
+                    ) : products.length === 0 ? (
+                        <div className="py-20 text-center text-gray-500">No products match the selected filters.</div>
                     ) : (
                         <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'}`}>
                             {products.map((product) => (
@@ -152,7 +151,13 @@ const Shop = () => {
                             <h2 className="text-xl font-bold">Filters</h2>
                             <button onClick={() => setMobileFiltersOpen(false)} className="text-xl font-bold">×</button>
                         </div>
-                        <Filters />
+                        <Filters
+                            isOpen={mobileFiltersOpen}
+                            onClose={() => setMobileFiltersOpen(false)}
+                            meta={meta}
+                            selected={filters}
+                            onChange={handleFilterChange}
+                        />
                     </div>
                 </div>
             )}

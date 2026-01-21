@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Minus, Plus, Heart, Share2, ShoppingBag } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingBag } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -15,6 +15,10 @@ const ProductDetails = () => {
     const [selectedColor, setSelectedColor] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
+    const [reviews, setReviews] = useState([]);
+    const [reviewText, setReviewText] = useState('');
+    const [reviewRating, setReviewRating] = useState(5);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -37,14 +41,61 @@ const ProductDetails = () => {
         fetchProduct();
     }, [id]);
 
-    const addToCart = () => {
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const { data } = await api.get('/reviews', { params: { productId: id } });
+                setReviews(data);
+            } catch (error) {
+                console.error("Error fetching reviews:", error);
+            }
+        };
+        fetchReviews();
+    }, [id]);
+
+    const submitReview = async () => {
+        if (!user) {
+            toast.info("Please login to write a review.");
+            return;
+        }
+        try {
+            setSubmitting(true);
+            await api.post('/reviews', {
+                productId: id,
+                rating: reviewRating,
+                comment: reviewText
+            });
+            toast.success("Review submitted");
+            setReviewText('');
+            const { data } = await api.get('/reviews', { params: { productId: id } });
+            setReviews(data);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Could not submit review");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const addToCart = async () => {
         if (!selectedSize || !selectedColor) {
             toast.error("Please select size and color");
             return;
         }
-        // In a real app, this would call an API or update global cart context
-        // For now, we simulate success
-        toast.success("Added to cart!");
+        if (!user) {
+            toast.info("Please login to add items to cart");
+            return;
+        }
+        try {
+            await api.post('/cart', {
+                productId: id,
+                quantity,
+                size: selectedSize,
+                color: selectedColor
+            });
+            toast.success("Added to cart!");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to add to cart");
+        }
     };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -185,10 +236,6 @@ const ProductDetails = () => {
                         >
                             <ShoppingBag size={20} /> ADD TO CART
                         </button>
-
-                        <button className="p-3 border border-gray-300 rounded-lg hover:border-black hover:text-primary transition-colors">
-                            <Heart size={20} />
-                        </button>
                     </div>
 
                     {/* Info Tabs */}
@@ -222,10 +269,62 @@ const ProductDetails = () => {
                                 </ul>
                             )}
                             {activeTab === 'reviews' && (
-                                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                                    <Star size={32} className="mx-auto text-yellow-500 mb-2" fill="currentColor" />
-                                    <p className="font-bold">No reviews yet</p>
-                                    <button className="text-primary text-sm underline mt-2">Be the first to review</button>
+                                <div className="space-y-4">
+                                    {reviews.length === 0 && (
+                                        <div className="text-center py-6 bg-gray-50 rounded-lg">
+                                            <Star size={32} className="mx-auto text-yellow-500 mb-2" fill="currentColor" />
+                                            <p className="font-bold">No reviews yet</p>
+                                        </div>
+                                    )}
+
+                                    {reviews.map((rev) => (
+                                        <div key={rev._id} className="border border-gray-100 rounded-lg p-4 flex items-start gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm">
+                                                {rev.name?.slice(0, 2) || 'RV'}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold">{rev.name}</span>
+                                                    <div className="flex">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star key={i} size={14} className={i < rev.rating ? 'text-yellow-400 fill-current' : 'text-gray-200'} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-gray-600 mt-1">{rev.comment}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="border-t border-gray-100 pt-4">
+                                        <h4 className="font-bold mb-2">Add your review</h4>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            {[1, 2, 3, 4, 5].map((val) => (
+                                                <button
+                                                    key={val}
+                                                    onClick={() => setReviewRating(val)}
+                                                    className={`p-1 ${reviewRating >= val ? 'text-yellow-500' : 'text-gray-300'}`}
+                                                    type="button"
+                                                >
+                                                    <Star size={18} fill={reviewRating >= val ? 'currentColor' : 'none'} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <textarea
+                                            className="w-full border rounded-lg p-3 text-sm"
+                                            rows={3}
+                                            placeholder="Share your thoughts about this product"
+                                            value={reviewText}
+                                            onChange={(e) => setReviewText(e.target.value)}
+                                        />
+                                        <button
+                                            onClick={submitReview}
+                                            disabled={submitting || !reviewText}
+                                            className="mt-2 bg-black text-white px-4 py-2 rounded font-bold disabled:opacity-50"
+                                        >
+                                            {submitting ? 'Submitting...' : 'Submit Review'}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

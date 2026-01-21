@@ -16,7 +16,9 @@ const productSchema = new mongoose.Schema({
     }],
     isActive: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
-    trending: { type: Boolean, default: false }
+    trending: { type: Boolean, default: false },
+    tag: { type: String, enum: ['hot', 'new', 'others'], default: 'others' },
+    tagColor: { type: String, default: '#DC143C' }
 }, { timestamps: true });
 
 export default mongoose.model("Product", productSchema);

@@ -43,4 +43,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.satisfy-regular {
+  font-family: "Satisfy", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Marquee for top announcement */
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 12s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Utility overrides if necessary */

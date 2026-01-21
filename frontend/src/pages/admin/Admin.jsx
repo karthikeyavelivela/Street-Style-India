@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'; // added useNavigate
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut, Menu, X } from 'lucide-react'; // added Menu, X
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, MessageSquare } from 'lucide-react'; // added Menu, X
 import { useAuth } from '../../context/AuthContext'; // added useAuth
 import Dashboard from './Dashboard';
 import Products from './Products';
 import UsersPage from './Users'; // Changed from placeholder
 import OrdersPage from './Orders'; // Changed from placeholder
+import Reviews from './Reviews';
 
 const Admin = () => {
     const location = useLocation();
@@ -23,6 +24,7 @@ const Admin = () => {
         { path: '/admin/products', icon: Package, label: 'Products' },
         { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
         { path: '/admin/users', icon: Users, label: 'Users' },
+        { path: '/admin/reviews', icon: MessageSquare, label: 'Reviews' },
         // { path: '/admin/settings', icon: Settings, label: 'Settings' }, 
     ];
 
@@ -111,6 +113,7 @@ const Admin = () => {
                     <Route path="/products" element={<Products />} />
                     <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/users" element={<UsersPage />} />
+                    <Route path="/reviews" element={<Reviews />} />
                     <Route path="*" element={<Dashboard />} />
                 </Routes>
             </main>

@@ -7,18 +7,9 @@ const ProductCard = ({ product }) => {
     return (
         <div className="group relative">
             <Link to={`/product/${productId}`} className="block relative overflow-hidden rounded-lg bg-gray-100 aspect-[3/4]">
-                {/* Product Tag */}
-                {product.tag && product.tag !== 'others' && (
-                    <span
-                        className="absolute top-2 left-2 text-white text-xs font-bold px-2 py-1 rounded z-10 uppercase"
-                        style={{ backgroundColor: product.tagColor || '#DC143C' }}
-                    >
-                        {product.tag === 'hot' ? 'Hot!' : product.tag === 'new' ? 'New' : ''}
-                    </span>
-                )}
                 {/* Discount Badge */}
                 {product.discount > 0 && (
-                    <span className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded z-10">
+                    <span className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded z-10">
                         -{product.discount}%
                     </span>
                 )}

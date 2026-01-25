@@ -42,7 +42,10 @@ const Products = () => {
 
     const fetchCategories = () => {
         const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
-        setCategories(cats);
+        // Add default categories if none exist
+        const defaultCategories = ['T-Shirts', 'Hoodies', 'Oversized', 'Sweatshirts'];
+        const allCategories = [...new Set([...cats, ...defaultCategories])];
+        setCategories(allCategories);
     };
 
     useEffect(() => {
@@ -197,7 +200,14 @@ const Products = () => {
         return acc;
     }, {}), [products]);
 
-    if (loading) return <div>Loading Products...</div>;
+    if (loading) {
+        return (
+            <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading Products...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-12">
@@ -240,34 +250,41 @@ const Products = () => {
                             />
                             <button onClick={addCategory} className="bg-black text-white px-4 py-2 rounded font-bold">Add</button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {categories.map((cat) => (
-                                <div key={cat} className="flex items-center gap-2 border rounded p-3">
-                                    {editingCategory === cat ? (
-                                        <>
-                                            <input
-                                                type="text"
-                                                defaultValue={cat}
-                                                onKeyPress={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        updateCategory(cat, e.target.value);
-                                                    }
-                                                }}
-                                                className="flex-1 border rounded px-2 py-1 text-sm"
-                                                autoFocus
-                                            />
-                                            <button onClick={() => setEditingCategory(null)} className="text-gray-500">Cancel</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="flex-1 font-medium">{cat}</span>
-                                            <button onClick={() => setEditingCategory(cat)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                                            <button onClick={() => deleteCategory(cat)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                        {categories.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500">
+                                <p className="mb-2">No categories found. Add your first category above.</p>
+                                <p className="text-sm">Default categories: T-Shirts, Hoodies, Oversized, Sweatshirts</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {categories.map((cat) => (
+                                    <div key={cat} className="flex items-center gap-2 border rounded p-3">
+                                        {editingCategory === cat ? (
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    defaultValue={cat}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            updateCategory(cat, e.target.value);
+                                                        }
+                                                    }}
+                                                    className="flex-1 border rounded px-2 py-1 text-sm"
+                                                    autoFocus
+                                                />
+                                                <button onClick={() => setEditingCategory(null)} className="text-gray-500">Cancel</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="flex-1 font-medium">{cat}</span>
+                                                <button onClick={() => setEditingCategory(cat)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                                                <button onClick={() => deleteCategory(cat)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -286,15 +303,29 @@ const Products = () => {
                         <div className="space-y-3">
                             <label className="text-sm font-bold">Category</label>
                             <select
-                                className="w-full border rounded px-3 py-2"
+                                className="w-full border-2 border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent cursor-pointer"
                                 value={form.category}
                                 onChange={(e) => setForm({ ...form, category: e.target.value })}
                                 required
+                                style={{ 
+                                    appearance: 'auto',
+                                    WebkitAppearance: 'menulist',
+                                    MozAppearance: 'menulist'
+                                }}
                             >
-                                <option value="">Select Category</option>
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
+                                <option value="" disabled className="text-gray-500">Select Category</option>
+                                {categories.length > 0 ? (
+                                    categories.map(cat => (
+                                        <option key={cat} value={cat} className="text-gray-900">{cat}</option>
+                                    ))
+                                ) : (
+                                    <>
+                                        <option value="T-Shirts">T-Shirts</option>
+                                        <option value="Hoodies">Hoodies</option>
+                                        <option value="Oversized">Oversized</option>
+                                        <option value="Sweatshirts">Sweatshirts</option>
+                                    </>
+                                )}
                             </select>
                             <input
                                 type="text"

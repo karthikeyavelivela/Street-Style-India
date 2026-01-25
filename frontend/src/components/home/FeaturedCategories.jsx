@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const categories = [
+const defaultCategories = [
     {
         id: 1,
         title: "T-Shirts",
@@ -19,27 +19,26 @@ const categories = [
         title: "Oversized",
         image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800",
         link: "/shop?category=oversized"
-    },
-    {
-        id: 4,
-        title: "Sweatshirts",
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800", // Placeholder
-        link: "/shop?category=sweatshirts"
     }
 ];
 
-const FeaturedCategories = () => {
+const FeaturedCategories = ({ sectionData }) => {
+    const categories = sectionData?.categories && sectionData.categories.length > 0
+        ? sectionData.categories.map((cat, index) => ({ ...cat, id: index + 1 }))
+        : defaultCategories;
     return (
         <section className="py-20 bg-white">
             <div className="container mx-auto px-4 md:px-8">
-                <h2 className="text-3xl font-black text-center mb-12 tracking-tight">FEATURED CATEGORIES</h2>
+                <h2 className="text-3xl font-black text-center mb-12 tracking-tight">
+                    {sectionData?.title || "FEATURED CATEGORIES"}
+                </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}
                             to={cat.link}
-                            className="group relative h-[400px] overflow-hidden rounded-xl shadow-lg"
+                            className="group relative h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden rounded-xl shadow-lg"
                         >
                             <div
                                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"

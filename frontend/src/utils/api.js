@@ -2,6 +2,9 @@ import axios from 'axios';
 
 // Create a configured axios instance
 const api = axios.create({
+    // Local backend
+    // baseURL: 'http://localhost:5000/api',
+    // Deployed backend (commented out)
     baseURL: 'https://street-style-india-1.onrender.com/api',
 });
 

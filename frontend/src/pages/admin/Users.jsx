@@ -20,22 +20,35 @@ const Users = () => {
         fetchUsers();
     }, []);
 
-    if (loading) return <div>Loading Users...</div>;
+    if (loading) {
+        return (
+            <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading Users...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase font-bold tracking-wider">
-                        <tr>
-                            <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Contact</th>
-                            <th className="px-6 py-4">Role</th>
-                            <th className="px-6 py-4">Joined</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {users.map((user) => (
+            {users.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                    <p className="text-lg font-bold mb-2">No users found</p>
+                    <p className="text-sm">Users will appear here once they register.</p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase font-bold tracking-wider">
+                            <tr>
+                                <th className="px-6 py-4">User</th>
+                                <th className="px-6 py-4">Contact</th>
+                                <th className="px-6 py-4">Role</th>
+                                <th className="px-6 py-4">Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {users.map((user) => (
                             <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
@@ -74,10 +87,11 @@ const Users = () => {
                                     </div>
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

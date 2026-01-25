@@ -111,8 +111,20 @@ const Navbar = () => {
             >
             <div className="container mx-auto px-4 md:px-8 grid grid-cols-3 items-center">
 
-                {/* Left: Navigation (Desktop) & Menu (Mobile) */}
-                <div className="flex justify-start">
+                {/* Left: Logo & Navigation (Desktop) */}
+                <div className="flex justify-start items-center space-x-4">
+                    {/* Logo */}
+                    <Link to="/" className="flex-shrink-0">
+                        <img 
+                            src="/logo.png" 
+                            alt="Street Style India Logo" 
+                            className="h-12 md:h-16 w-auto object-cover"
+                            onError={(e) => {
+                                // Fallback if logo doesn't exist
+                                e.target.style.display = 'none';
+                            }}
+                        />
+                    </Link>
                     <div className="hidden md:flex items-center space-x-8">
                         {navLinks.map((link) => (
                             <NavLink
@@ -127,19 +139,12 @@ const Navbar = () => {
                             </NavLink>
                         ))}
                     </div>
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden text-gray-800"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
                 </div>
 
                 {/* Center: Brand Name */}
                 <div className="flex justify-center">
                     <Link to="/" className="flex flex-col items-center relative z-50">
-                        <h1 className="text-xl md:text-3xl font-black tracking-[0.2em] transition-colors text-black uppercase whitespace-nowrap satisfy-regular">
+                        <h1 className="text-xl md:text-3xl font-normal tracking-[0.2em] transition-colors text-black whitespace-nowrap" style={{ fontFamily: 'Satisfy, cursive' }}>
                             Street Style India
                         </h1>
                         <span className="text-[10px] font-medium tracking-widest uppercase absolute top-full mt-1 text-secondary">
@@ -178,6 +183,14 @@ const Navbar = () => {
                     <Link to="/profile" className="hidden md:block">
                         <User size={20} className="text-gray-800 hover:text-primary transition-colors" />
                     </Link>
+
+                    {/* Mobile Menu Button - Moved to top right */}
+                    <button
+                        className="md:hidden text-gray-800"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                 </div>
             </div>
 

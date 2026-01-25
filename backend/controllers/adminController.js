@@ -1,6 +1,7 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
+import HomePageSection from "../models/HomePageSection.js";
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/dashboard
@@ -80,6 +81,125 @@ export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}).select('-password');
         res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all home page sections
+// @route   GET /api/admin/sections
+// @access  Private/Admin
+export const getSections = async (req, res) => {
+    try {
+        const sections = await HomePageSection.find({}).sort({ order: 1 });
+        res.json(sections);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get active home page sections (public)
+// @route   GET /api/sections
+// @access  Public
+export const getActiveSections = async (req, res) => {
+    try {
+        const sections = await HomePageSection.find({ isActive: true }).sort({ order: 1 });
+        res.json(sections);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Create a new home page section
+// @route   POST /api/admin/sections
+// @access  Private/Admin
+export const createSection = async (req, res) => {
+    try {
+        const { type, title, subtitle, order, isActive, config, slides, categories, content, styles } = req.body;
+        
+        // Get max order if not provided
+        let sectionOrder = order;
+        if (sectionOrder === undefined || sectionOrder === null) {
+            const maxOrder = await HomePageSection.findOne({}).sort({ order: -1 });
+            sectionOrder = maxOrder ? maxOrder.order + 1 : 0;
+        }
+
+        const section = new HomePageSection({
+            type,
+            title,
+            subtitle,
+            order: sectionOrder,
+            isActive: isActive !== undefined ? isActive : true,
+            config: config || {},
+            slides: slides || [],
+            categories: categories || [],
+            content: content || '',
+            styles: styles || {}
+        });
+
+        const savedSection = await section.save();
+        res.status(201).json(savedSection);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update a home page section
+// @route   PUT /api/admin/sections/:id
+// @access  Private/Admin
+export const updateSection = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const section = await HomePageSection.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!section) {
+            return res.status(404).json({ message: 'Section not found' });
+        }
+
+        res.json(section);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a home page section
+// @route   DELETE /api/admin/sections/:id
+// @access  Private/Admin
+export const deleteSection = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const section = await HomePageSection.findByIdAndDelete(id);
+
+        if (!section) {
+            return res.status(404).json({ message: 'Section not found' });
+        }
+
+        res.json({ message: 'Section deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Reorder sections
+// @route   PUT /api/admin/sections/reorder
+// @access  Private/Admin
+export const reorderSections = async (req, res) => {
+    try {
+        const { sectionOrders } = req.body; // Array of { id, order }
+
+        const updatePromises = sectionOrders.map(({ id, order }) =>
+            HomePageSection.findByIdAndUpdate(id, { order }, { new: true })
+        );
+
+        await Promise.all(updatePromises);
+        const sections = await HomePageSection.find({}).sort({ order: 1 });
+        res.json(sections);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

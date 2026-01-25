@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-const slides = [
+const defaultSlides = [
     {
         id: 1,
         title: "Urban Streetwear Redefined",
@@ -26,8 +26,11 @@ const slides = [
     }
 ];
 
-const Hero = () => {
+const Hero = ({ sectionData }) => {
     const [current, setCurrent] = useState(0);
+    const slides = sectionData?.slides && sectionData.slides.length > 0 
+        ? sectionData.slides.map((slide, index) => ({ ...slide, id: index + 1 }))
+        : defaultSlides;
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -45,8 +48,8 @@ const Hero = () => {
                         }`}
                 >
                     <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${slide.image})` }}
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${slide.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                     >
                         <div className="absolute inset-0 bg-black/40" />
                     </div>
@@ -60,10 +63,10 @@ const Hero = () => {
                                 {slide.title}
                             </h2>
                             <Link
-                                to="/shop"
+                                to={slide.link || "/shop"}
                                 className="inline-flex items-center bg-primary hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold tracking-wide transition-all transform hover:scale-105"
                             >
-                                {slide.cta} <ArrowRight className="ml-2" size={20} />
+                                {slide.cta || "Shop Now"} <ArrowRight className="ml-2" size={20} />
                             </Link>
                         </div>
                     </div>

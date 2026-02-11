@@ -1,11 +1,19 @@
 import axios from 'axios';
 
 // Create a configured axios instance
+// Use environment variable for production, fallback to localhost for development
+const getBaseURL = () => {
+    // Check if we're in production (Vite sets this automatically)
+    if (import.meta.env.PROD) {
+        // Use environment variable if set, otherwise use the deployed backend URL
+        return import.meta.env.VITE_API_URL || 'https://street-style-india-1.onrender.com/api';
+    }
+    // Development: use localhost or environment variable
+    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+};
+
 const api = axios.create({
-    // Local backend
-    baseURL: 'http://localhost:5000/api',
-    // Deployed backend (commented out)
-    // baseURL: 'https://street-style-india-1.onrender.com/api',
+    baseURL: getBaseURL(),
 });
 
 // Add a request interceptor to include the auth token

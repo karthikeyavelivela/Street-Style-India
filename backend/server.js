@@ -9,6 +9,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import sectionRoutes from "./routes/sectionRoutes.js";
+import adminMainRoutes from "./routes/adminMainRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -28,6 +30,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/sections", sectionRoutes);
+app.use("/api/admin-main", adminMainRoutes);
+app.use("/api/test", testRoutes);
 
 // Test endpoint to verify cart routes are loaded
 app.get("/api/test-cart", (req, res) => {

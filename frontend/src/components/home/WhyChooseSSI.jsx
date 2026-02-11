@@ -5,7 +5,7 @@ const features = [
     {
         icon: Truck,
         title: "Free Shipping",
-        desc: "On orders above ₹999"
+        desc: "On orders above ₹1499 Pettu"
     },
     {
         icon: RotateCcw,

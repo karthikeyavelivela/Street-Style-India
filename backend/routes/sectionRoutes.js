@@ -8,3 +8,7 @@ router.get("/", getActiveSections);
 
 export default router;
 
+
+
+
+

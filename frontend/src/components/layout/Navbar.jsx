@@ -101,12 +101,14 @@ const Navbar = () => {
                     <span className="mx-6">Opening Soon !!</span>
                 </div>
             </div>
-            <nav className={`fixed w-full z-40 transition-all duration-300 ${scrolled ? 'py-2 shadow-sm top-[18px]' : 'py-3 top-[18px]'}`}
+            <nav className={`fixed w-full z-40 transition-all duration-300 ${scrolled ? 'py-2 shadow-sm top-[18px]' : 'py-3 md:py-3 top-[18px]'}`}
                 style={{
                     background: 'rgba(255, 255, 255, 0.75)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
-                    borderBottom: scrolled ? '1px solid rgba(229, 231, 235, 0.5)' : 'none'
+                    borderBottom: scrolled ? '1px solid rgba(229, 231, 235, 0.5)' : 'none',
+                    paddingBottom: 'calc(0.75rem + 2px)',
+                    minHeight: 'auto'
                 }}
             >
             <div className="container mx-auto px-4 md:px-8 grid grid-cols-3 items-center">
@@ -114,11 +116,12 @@ const Navbar = () => {
                 {/* Left: Logo & Navigation (Desktop) */}
                 <div className="flex justify-start items-center space-x-4">
                     {/* Logo */}
-                    <Link to="/" className="flex-shrink-0">
+                    <Link to="/" className="flex-shrink-0" style={{ marginBottom: '2px' }}>
                         <img 
                             src="/logo.png" 
                             alt="Street Style India Logo" 
                             className="h-12 md:h-16 w-auto object-cover"
+                            style={{ marginBottom: '2px' }}
                             onError={(e) => {
                                 // Fallback if logo doesn't exist
                                 e.target.style.display = 'none';
@@ -142,9 +145,9 @@ const Navbar = () => {
                 </div>
 
                 {/* Center: Brand Name */}
-                <div className="flex justify-center">
+                <div className="flex justify-center" style={{ marginBottom: '2px' }}>
                     <Link to="/" className="flex flex-col items-center relative z-50">
-                        <h1 className="text-xl md:text-3xl font-normal tracking-[0.2em] transition-colors text-black whitespace-nowrap" style={{ fontFamily: 'Satisfy, cursive' }}>
+                        <h1 className="text-xl md:text-3xl font-normal tracking-[0.2em] transition-colors text-black whitespace-nowrap" style={{ fontFamily: 'Satisfy, cursive', marginBottom: '2px' }}>
                             Street Style India
                         </h1>
                         <span className="text-[10px] font-medium tracking-widest uppercase absolute top-full mt-1 text-secondary">

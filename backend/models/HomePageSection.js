@@ -35,3 +35,7 @@ const homePageSectionSchema = new mongoose.Schema({
 
 export default mongoose.model("HomePageSection", homePageSectionSchema);
 
+
+
+
+

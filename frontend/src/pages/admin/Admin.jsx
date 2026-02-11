@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'; // added useNavigate
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, MessageSquare, Layout } from 'lucide-react'; // added Menu, X
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, MessageSquare, Layout, Warehouse } from 'lucide-react'; // added Menu, X
 import { useAuth } from '../../context/AuthContext'; // added useAuth
+import api from '../../utils/api';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import UsersPage from './Users'; // Changed from placeholder
@@ -14,6 +15,9 @@ const Admin = () => {
     const navigate = useNavigate();
     const { logout, user, loading } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showStockLogin, setShowStockLogin] = useState(false);
+    const [stockPin, setStockPin] = useState(['', '', '', '', '', '']);
+    const [stockLoginError, setStockLoginError] = useState('');
 
     useEffect(() => {
         if (!loading && (!user || user.role !== 'admin')) {
@@ -51,6 +55,55 @@ const Admin = () => {
         // { path: '/admin/settings', icon: Settings, label: 'Settings' }, 
     ];
 
+    const handleStockClick = (e) => {
+        e.preventDefault();
+        setShowStockLogin(true);
+        setStockPin(['', '', '', '', '', '']);
+        setStockLoginError('');
+    };
+
+    const handlePinChange = (index, value) => {
+        if (value.length > 1) return;
+        const newPin = [...stockPin];
+        newPin[index] = value;
+        setStockPin(newPin);
+        setStockLoginError('');
+
+        // Auto-focus next input
+        if (value && index < 5) {
+            const nextInput = document.getElementById(`pin-${index + 1}`);
+            if (nextInput) nextInput.focus();
+        }
+    };
+
+    const handlePinKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !stockPin[index] && index > 0) {
+            const prevInput = document.getElementById(`pin-${index - 1}`);
+            if (prevInput) prevInput.focus();
+        }
+    };
+
+    const handleStockLogin = async () => {
+        const pin = stockPin.join('');
+        if (pin.length !== 6) {
+            setStockLoginError('Please enter 6-digit PIN');
+            return;
+        }
+
+        try {
+            const { data } = await api.post('/admin-main/auth', { pin });
+            // Store stock admin token separately
+            localStorage.setItem('stockAdminInfo', JSON.stringify(data));
+            // Redirect to admin-main
+            window.location.href = '/admin-main';
+        } catch (error) {
+            setStockLoginError(error.response?.data?.message || 'Invalid PIN');
+            setStockPin(['', '', '', '', '', '']);
+            const firstInput = document.getElementById('pin-0');
+            if (firstInput) firstInput.focus();
+        }
+    };
+
     const SidebarContent = () => (
         <>
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -79,6 +132,14 @@ const Admin = () => {
                         </Link>
                     );
                 })}
+                {/* Stock Admin Link */}
+                <button
+                    onClick={handleStockClick}
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors text-gray-600 hover:bg-gray-100"
+                >
+                    <Warehouse size={20} />
+                    <span>Stock</span>
+                </button>
             </nav>
             <div className="absolute bottom-0 w-full p-4 border-t border-gray-100">
                 <button
@@ -141,6 +202,56 @@ const Admin = () => {
                     <Route path="*" element={<Dashboard />} />
                 </Routes>
             </main>
+
+            {/* Stock Admin PIN Login Modal */}
+            {showStockLogin && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-black">Stock Admin Access</h2>
+                            <button
+                                onClick={() => {
+                                    setShowStockLogin(false);
+                                    setStockPin(['', '', '', '', '', '']);
+                                    setStockLoginError('');
+                                }}
+                                className="text-gray-500 hover:text-black"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <p className="text-gray-600 mb-6">Enter 6-digit Stock Admin PIN</p>
+
+                        <div className="flex justify-center gap-3 mb-4">
+                            {stockPin.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`pin-${index}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handlePinChange(index, e.target.value.replace(/\D/g, ''))}
+                                    onKeyDown={(e) => handlePinKeyDown(index, e)}
+                                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                />
+                            ))}
+                        </div>
+
+                        {stockLoginError && (
+                            <p className="text-red-600 text-sm text-center mb-4">{stockLoginError}</p>
+                        )}
+
+                        <button
+                            onClick={handleStockLogin}
+                            className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors"
+                        >
+                            Access Stock Panel
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

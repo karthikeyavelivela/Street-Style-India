@@ -55,7 +55,7 @@ export const addToCart = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        // Check if variant exists and has stock
+        // Check if variant exists
         const variant = product.variants?.find(v => v.color === color);
         if (!variant) {
             return res.status(400).json({ message: "Color variant not found" });
@@ -66,8 +66,15 @@ export const addToCart = async (req, res) => {
             return res.status(400).json({ message: "Size not found for this color" });
         }
 
-        if (sizeObj.stock < quantity) {
-            return res.status(400).json({ message: "Insufficient stock" });
+        // Check available stock (product level) - this is the actual available stock
+        const availableStock = (product.totalStock || 0) - (product.onlineSales || 0) - (product.offlineSales || 0);
+        if (availableStock < quantity) {
+            return res.status(400).json({ message: `Insufficient stock. Available: ${availableStock}` });
+        }
+
+        // Also check variant-level stock if it exists
+        if (sizeObj.stock !== undefined && sizeObj.stock < quantity) {
+            return res.status(400).json({ message: "Insufficient stock for this size" });
         }
 
         let cart = await Cart.findOne({ userId: req.user._id });
@@ -125,8 +132,15 @@ export const updateCartItem = async (req, res) => {
         const variant = product.variants?.find(v => v.color === item.color);
         const sizeObj = variant?.sizes?.find(s => s.size === item.size);
         
-        if (!sizeObj || sizeObj.stock < quantity) {
-            return res.status(400).json({ message: "Insufficient stock" });
+        // Check available stock (product level)
+        const availableStock = (product.totalStock || 0) - (product.onlineSales || 0) - (product.offlineSales || 0);
+        if (availableStock < quantity) {
+            return res.status(400).json({ message: `Insufficient stock. Available: ${availableStock}` });
+        }
+        
+        // Also check variant-level stock if it exists
+        if (!sizeObj || (sizeObj.stock !== undefined && sizeObj.stock < quantity)) {
+            return res.status(400).json({ message: "Insufficient stock for this size" });
         }
 
         item.quantity = quantity;
@@ -174,6 +188,7 @@ export const clearCart = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 
 

@@ -82,7 +82,7 @@ const Checkout = () => {
                 return acc + (itemPrice * item.quantity);
             }, 0);
             const tax = Math.round(subtotal * 0.18);
-            const shipping = subtotal > 999 ? 0 : 99;
+            const shipping = subtotal > 1499 ? 0 : 99;
             const total = subtotal + tax + shipping;
 
             // Prepare order items
@@ -138,7 +138,7 @@ const Checkout = () => {
         return acc + (itemPrice * item.quantity);
     }, 0);
     const tax = Math.round(subtotal * 0.18);
-    const shipping = subtotal > 999 ? 0 : 99;
+    const shipping = subtotal > 1499 ? 0 : 99;
     const total = subtotal + tax + shipping;
 
     if (loadingCart) {
@@ -345,6 +345,21 @@ const Checkout = () => {
                     {/* Order Summary Sidebar */}
                     <div className="bg-gray-50 p-6 rounded-xl h-fit">
                         <h3 className="font-bold mb-4">Order Summary</h3>
+                        {subtotal < 1499 && (
+                            <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                <p className="text-xs font-bold text-primary">
+                                    Add ₹{Math.ceil(1499 - subtotal)} more for <span className="uppercase">Free Shipping Pettu</span>
+                                </p>
+                            </div>
+                        )}
+                        {subtotal >= 1499 && (
+                            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p className="text-xs font-bold text-green-700 flex items-center gap-1">
+                                    <Truck size={14} />
+                                    <span>You qualify for Free Shipping Pettu!</span>
+                                </p>
+                            </div>
+                        )}
                         <div className="space-y-2 text-sm mb-4">
                             <div className="flex justify-between">
                                 <span>Items ({cartItems.length})</span>

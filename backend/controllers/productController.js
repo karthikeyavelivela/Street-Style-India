@@ -116,7 +116,35 @@ export const getProductMeta = async (_req, res) => {
 // @access  Private/Admin
 export const createProduct = async (req, res) => {
     try {
-        const product = new Product(req.body);
+        const productData = req.body;
+        
+        // Ensure stock fields are initialized
+        if (!productData.totalStock) productData.totalStock = 0;
+        if (!productData.onlineSales) productData.onlineSales = 0;
+        if (!productData.offlineSales) productData.offlineSales = 0;
+        
+        // Sync variant stock with totalStock if variants exist
+        if (productData.variants && productData.variants.length > 0) {
+            const totalVariantStock = productData.variants.reduce((sum, variant) => {
+                return sum + (variant.sizes || []).reduce((sizeSum, size) => {
+                    return sizeSum + (size.stock || 0);
+                }, 0);
+            }, 0);
+            
+            // If totalStock is set but variants don't have stock, distribute it
+            if (productData.totalStock > 0 && totalVariantStock === 0) {
+                const stockPerVariant = Math.floor(productData.totalStock / productData.variants.length);
+                productData.variants.forEach(variant => {
+                    variant.sizes.forEach(size => {
+                        size.stock = stockPerVariant;
+                    });
+                });
+            }
+        }
+        
+        productData.availableStock = productData.totalStock - productData.onlineSales - productData.offlineSales;
+        
+        const product = new Product(productData);
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);
     } catch (error) {
@@ -133,6 +161,31 @@ export const updateProduct = async (req, res) => {
 
         if (product) {
             Object.assign(product, req.body);
+            
+            // Sync variant stock with totalStock if totalStock changed
+            if (req.body.totalStock !== undefined && product.variants && product.variants.length > 0) {
+                const totalVariantStock = product.variants.reduce((sum, variant) => {
+                    return sum + (variant.sizes || []).reduce((sizeSum, size) => {
+                        return sizeSum + (size.stock || 0);
+                    }, 0);
+                }, 0);
+                
+                // If totalStock is set but variants don't have stock, distribute it
+                if (product.totalStock > 0 && totalVariantStock === 0) {
+                    const stockPerVariant = Math.floor(product.totalStock / product.variants.length);
+                    product.variants.forEach(variant => {
+                        variant.sizes.forEach(size => {
+                            if (!size.stock || size.stock === 0) {
+                                size.stock = stockPerVariant;
+                            }
+                        });
+                    });
+                }
+            }
+            
+            // Recalculate available stock
+            product.availableStock = (product.totalStock || 0) - (product.onlineSales || 0) - (product.offlineSales || 0);
+            
             const updatedProduct = await product.save();
             res.json(updatedProduct);
         } else {

@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -32,6 +33,21 @@ export const createOrder = async (req, res) => {
         });
 
         const createdOrder = await order.save();
+
+        // Update product onlineSales for stock tracking
+        for (const item of items) {
+            try {
+                const product = await Product.findById(item.productId);
+                if (product) {
+                    product.onlineSales = (product.onlineSales || 0) + item.quantity;
+                    product.availableStock = (product.totalStock || 0) - product.onlineSales - (product.offlineSales || 0);
+                    await product.save();
+                }
+            } catch (error) {
+                console.error(`Error updating stock for product ${item.productId}:`, error);
+            }
+        }
+
         res.status(201).json(createdOrder);
     }
 };

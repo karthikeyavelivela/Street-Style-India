@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Admin from './pages/admin/Admin';
+import AdminMain from './pages/admin-main/AdminMain';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Blog from './pages/Blog';
@@ -26,9 +27,14 @@ const UserLayoutWrapper = ({ children }) => {
 function AppContent() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const isAdminMain = location.pathname.startsWith('/admin-main');
 
   return (
-    isAdmin ? (
+    isAdminMain ? (
+      <Routes>
+        <Route path="/admin-main/*" element={<AdminMain />} />
+      </Routes>
+    ) : isAdmin ? (
       <Routes>
         <Route path="/admin/*" element={<Admin />} />
       </Routes>

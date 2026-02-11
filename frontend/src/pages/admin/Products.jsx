@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../../utils/api';
-import { Pencil, Trash2, Plus, AlertCircle, X, Check } from 'lucide-react';
+import { Pencil, Trash2, Plus, AlertCircle, X, Check, Loader } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { uploadImageToCloudinary, uploadMultipleImages } from '../../utils/cloudinary';
 
 const buildEmptyProduct = () => ({
     name: '',
@@ -28,6 +29,7 @@ const Products = () => {
     const [newCategory, setNewCategory] = useState('');
     const [editingCategory, setEditingCategory] = useState(null);
     const [showCategoryManager, setShowCategoryManager] = useState(false);
+    const [uploadingImages, setUploadingImages] = useState(false);
 
     const fetchProducts = async () => {
         try {
@@ -360,28 +362,37 @@ const Products = () => {
                             <label className="text-sm font-bold">Product Images</label>
                             <div className="space-y-3">
                                 <div>
-                                    <label className="block text-xs font-medium mb-2 text-gray-600">Upload from Device</label>
+                                    <label className="block text-xs font-medium mb-2 text-gray-600">Upload from Device (Direct to Cloudinary)</label>
                                     <input
                                         type="file"
                                         multiple
-                                        accept="image/*"
-                                        onChange={(e) => {
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={async (e) => {
                                             const files = Array.from(e.target.files);
-                                            const imagePromises = files.map(file => {
-                                                return new Promise((resolve) => {
-                                                    const reader = new FileReader();
-                                                    reader.onload = (e) => resolve(e.target.result);
-                                                    reader.readAsDataURL(file);
-                                                });
-                                            });
-                                            Promise.all(imagePromises).then(base64Images => {
+                                            if (files.length === 0) return;
+                                            
+                                            setUploadingImages(true);
+                                            try {
+                                                const urls = await uploadMultipleImages(files);
                                                 const currentImages = form.images ? form.images.split('\n').filter(Boolean) : [];
-                                                setForm({ ...form, images: [...currentImages, ...base64Images].join('\n') });
-                                            });
+                                                setForm({ ...form, images: [...currentImages, ...urls].join('\n') });
+                                                toast.success(`${urls.length} image(s) uploaded successfully!`);
+                                            } catch (error) {
+                                                toast.error('Error uploading images: ' + error.message);
+                                            } finally {
+                                                setUploadingImages(false);
+                                            }
                                         }}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                                        disabled={uploadingImages}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm disabled:opacity-50"
                                     />
-                                    <p className="text-xs text-gray-400 mt-1">Select multiple images</p>
+                                    {uploadingImages && (
+                                        <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                            <Loader size={12} className="animate-spin" />
+                                            Uploading to Cloudinary...
+                                        </p>
+                                    )}
+                                    <p className="text-xs text-gray-400 mt-1">Select multiple images (JPG, PNG, WEBP - Max 5MB each)</p>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium mb-2 text-gray-600">Or Enter Image URLs (one per line)</label>
